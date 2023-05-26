@@ -1,18 +1,8 @@
 import React, { Component } from 'react';
 import { nanoid } from 'nanoid';
-// import ContactForm from './ContactForm/ContactForm';
-
-function capitalizeFirstLetterOfEachWord(str) {
-  const stringToCorrect = str
-    .toLowerCase()
-    .split(' ')
-    .map(word => {
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    })
-    .join(' ');
-
-  return stringToCorrect;
-}
+import { ContactForm } from './ContactForm';
+import capitalizeEachWord from 'utils/capitalizeEachWord';
+import { Contact } from './Contact';
 
 const INITIAL_STATE = {
   contacts: [
@@ -22,8 +12,6 @@ const INITIAL_STATE = {
     { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
   ],
   filter: '',
-  name: '',
-  number: '',
 };
 
 export class App extends Component {
@@ -31,11 +19,15 @@ export class App extends Component {
     ...INITIAL_STATE,
   };
 
-  handleFilterChange = e => {
-    const { name } = e.target;
+  handleChange = e => {
+    const { name, value } = e.target;
 
+    this.setState({ [name]: value });
+  };
+
+  addContactToState = newContact => {
     this.setState({
-      [name]: e.target.value,
+      contacts: [...this.state.contacts, newContact],
     });
   };
 
@@ -43,37 +35,29 @@ export class App extends Component {
     e.preventDefault();
 
     const formDOM = e.currentTarget;
-    const capitalizedInputNameValueOnSubmit = capitalizeFirstLetterOfEachWord(
-      formDOM.elements.name.value
-    );
-    const inputNumberValueOnSubmit = formDOM.elements.number.value;
     const newUserId = nanoid();
+    const newUserName = capitalizeEachWord(formDOM.elements.name.value);
+    const newUserNumber = formDOM.elements.number.value;
 
-    console.log(`Kontakty PO kliknięciu submit, PRZED dodaniem kontaktu:`);
-    console.log(this.state.contacts);
+    const newContact = {
+      id: newUserId,
+      name: newUserName,
+      number: newUserNumber,
+    };
 
-    this.setState({
-      contacts: this.state.contacts.push({
-        id: newUserId,
-        name: capitalizedInputNameValueOnSubmit,
-        number: inputNumberValueOnSubmit,
-      }),
-    });
-
-    console.log(`kontakty PO kliknięciu submit, PO dodaniem kontaktu:`);
-    console.log(this.state.contacts);
+    this.addContactToState(newContact);
 
     formDOM.reset();
   };
 
   render() {
-    console.log(`kontakty przed submit:`);
-    console.log(this.state.contacts);
+    const { contacts, filter } = this.state;
+
     return (
       <div>
         <h1>Phonebook</h1>
-
-        <form onSubmit={this.handleSubmit}>
+        <ContactForm contacts={contacts} onSubmit={this.handleSubmit} />
+        {/* <form onSubmit={this.handleSubmit}>
           <label>
             Name
             <input
@@ -95,10 +79,24 @@ export class App extends Component {
             />
           </label>
           <button type="submit">Add contact</button>
-        </form>
+        </form> */}
 
         <h2>Contacts</h2>
-        <ul>{/* <ListItem /> */}</ul>
+        <ul>
+          {/* <ListItem /> */}
+          <label>
+            Find contacts by name
+            <input type="text" name="filter" />
+          </label>
+          <Contact contacts={contacts} />
+          {/* <>
+            {contacts.map(({ id, name, number }) => (
+              <li key={id}>
+                {name}: {number}
+              </li>
+            ))}
+          </> */}
+        </ul>
       </div>
     );
   }

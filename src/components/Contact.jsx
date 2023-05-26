@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
 export class Contact extends Component {
+  
   render() {
-    const { contacts } = this.state;
+    const { contacts } = this.props;
 
     return (
       <>
