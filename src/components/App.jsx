@@ -1,15 +1,17 @@
 import React, { Component } from 'react';
+import capitalizeEachWord from 'utils/capitalizeEachWord';
 import { nanoid } from 'nanoid';
 import { ContactForm } from './ContactForm';
-import capitalizeEachWord from 'utils/capitalizeEachWord';
-import { Contact } from './Contact';
+import { ContactList } from './ContactList';
+import { Filter } from './Filter';
+import css from './App.module.css';
 
 const INITIAL_STATE = {
   contacts: [
-    { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-    { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-    { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-    { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
+    { id: nanoid(), name: 'Rosie Simpson', number: '459-12-56' },
+    { id: nanoid(), name: 'Hermione Kline', number: '443-89-12' },
+    { id: nanoid(), name: 'Eden Clements', number: '645-17-79' },
+    { id: nanoid(), name: 'Annie Copeland', number: '227-91-26' },
   ],
   filter: '',
 };
@@ -26,26 +28,40 @@ export class App extends Component {
   };
 
   addContactToState = newContact => {
+    const { contacts } = this.state;
     this.setState({
-      contacts: [...this.state.contacts, newContact],
+      contacts: [...contacts, newContact],
+    });
+  };
+
+  deleteContactFromState = e => {
+    e.preventDefault();
+
+    const { id } = e.target;
+    const { contacts } = this.state;
+
+    this.setState({
+      contacts: contacts.filter(c => c.id !== id),
     });
   };
 
   handleSubmit = e => {
     e.preventDefault();
 
+    const { contacts } = this.state;
     const formDOM = e.currentTarget;
-    const newUserId = nanoid();
-    const newUserName = capitalizeEachWord(formDOM.elements.name.value);
-    const newUserNumber = formDOM.elements.number.value;
+    const newContactId = nanoid();
+    const newContactName = capitalizeEachWord(formDOM.elements.name.value);
+    const newContactNumber = formDOM.elements.number.value;
 
     const newContact = {
-      id: newUserId,
-      name: newUserName,
-      number: newUserNumber,
+      id: newContactId,
+      name: newContactName,
+      number: newContactNumber,
     };
-
-    this.addContactToState(newContact);
+    contacts.find(c => c.name.toLowerCase() === newContact.name.toLowerCase())
+      ? window.alert(`${newContact.name} is already in contacts.`)
+      : this.addContactToState(newContact);
 
     formDOM.reset();
   };
@@ -54,50 +70,18 @@ export class App extends Component {
     const { contacts, filter } = this.state;
 
     return (
-      <div>
-        <h1>Phonebook</h1>
-        <ContactForm contacts={contacts} onSubmit={this.handleSubmit} />
-        {/* <form onSubmit={this.handleSubmit}>
-          <label>
-            Name
-            <input
-              type="text"
-              name="name"
-              pattern="^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-              title="Name may contain only letters, apostrophe, dash and spaces. For example Adrian, Jacob Mercer, Charles de Batz de Castelmore d'Artagnan"
-              required
-            />
-          </label>
-          <label>
-            Number
-            <input
-              type="tel"
-              name="number"
-              pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-              title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-              required
-            />
-          </label>
-          <button type="submit">Add contact</button>
-        </form> */}
+      <main>
+        <h1 className={css.phonebookHeader}>Phonebook</h1>
+        <ContactForm onSubmit={this.handleSubmit} />
 
-        <h2>Contacts</h2>
-        <ul>
-          {/* <ListItem /> */}
-          <label>
-            Find contacts by name
-            <input type="text" name="filter" />
-          </label>
-          <Contact contacts={contacts} />
-          {/* <>
-            {contacts.map(({ id, name, number }) => (
-              <li key={id}>
-                {name}: {number}
-              </li>
-            ))}
-          </> */}
-        </ul>
-      </div>
+        <h2 className={css.contactsHeader}>Contacts</h2>
+        <Filter filter={filter} onChange={this.handleChange} />
+        <ContactList
+          contacts={contacts}
+          filter={filter}
+          onClick={this.deleteContactFromState}
+        />
+      </main>
     );
   }
 }
