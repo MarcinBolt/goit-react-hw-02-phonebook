@@ -1,11 +1,35 @@
 import React, { Component } from 'react';
+import { nanoid } from 'nanoid';
+import capitalizeEachWord from 'utils/capitalizeEachWord';
 import PropTypes from 'prop-types';
 import css from './ContactForm.module.css';
 
 export class ContactForm extends Component {
+  handleSubmit = e => {
+    e.preventDefault();
+
+    const { contacts, addContactToState } = this.props;
+    const formDOM = e.currentTarget;
+    const newContactId = nanoid();
+    const newContactName = capitalizeEachWord(formDOM.elements.name.value);
+    const newContactNumber = formDOM.elements.number.value;
+
+    const newContact = {
+      id: newContactId,
+      name: newContactName,
+      number: newContactNumber,
+    };
+
+    formDOM.reset();
+
+    contacts.find(c => c.name.toLowerCase() === newContact.name.toLowerCase())
+      ? window.alert(`${newContact.name} is already in contacts.`)
+      : addContactToState(newContact);
+  };
+
   render() {
     return (
-      <form onSubmit={this.props.onSubmit} className={css.contactForm}>
+      <form onSubmit={this.handleSubmit} className={css.contactForm}>
         <label className={css.contactForm__label}>
           <p className={css.contactForm__labelDescription}>Name</p>
           <input
